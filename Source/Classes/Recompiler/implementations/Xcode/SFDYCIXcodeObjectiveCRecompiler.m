@@ -81,6 +81,7 @@
             [self.console debug:[NSString stringWithFormat:@"We should actually run %@ %@", command.commandPath, command.arguments]];
             [self.console debug:[NSString stringWithFormat:@"Command tool specification : %@", [command toolSpecification]]];
 
+            [command addArgumentsFromArray:@[@"-arch", @"x86_64"]];
             [self runCompilationCommand:command completion:^(NSError *error) {
                 if (error != nil) {
                     completionBlock(error);
@@ -192,7 +193,8 @@
     NSMutableArray * dlybArguments = [NSMutableArray array];
     [dlybArguments addObjectsFromArray:
       @[
-        @"-arch", clangParams.arch,
+        @"-arch", @"i386",
+        @"-arch", @"x86_64",
         @"-dynamiclib",
         @"-isysroot", clangParams.isysroot,
       ]

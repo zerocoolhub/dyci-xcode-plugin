@@ -55,6 +55,7 @@
 - (NSDictionary *)environment;
 - (id)toolSpecification;
 - (NSString *)workingDirectoryPath;
+- (void)addArgumentsFromArray:(id)arg1;
 
 // :))
 - (void)rerunCommand;
