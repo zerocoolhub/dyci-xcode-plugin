@@ -152,6 +152,29 @@
     return _console;
 }
 
+- (NSString *)runCommand:(NSString *)commandToRun {
+    NSTask *task = [[NSTask alloc] init];
+    [task setLaunchPath:@"/bin/sh"];
+    
+    NSArray *arguments = [NSArray arrayWithObjects:
+                          @"-c" ,
+                          [NSString stringWithFormat:@"%@", commandToRun],
+                          nil];
+    NSLog(@"run command:%@", commandToRun);
+    [task setArguments:arguments];
+    
+    NSPipe *pipe = [NSPipe pipe];
+    [task setStandardOutput:pipe];
+    
+    NSFileHandle *file = [pipe fileHandleForReading];
+    
+    [task launch];
+    
+    NSData *data = [file readDataToEndOfFile];
+    
+    NSString *output = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    return output;
+}
 
 - (void)createDynamiclibraryWithCommand:(id <CDRSXcode_XCDependencyCommand>)command completion:(void (^)(NSError *))completion {
 
@@ -235,6 +258,11 @@
 
     [DYCI_CCPShellRunner runShellCommand:command.commandPath withArgs:dlybArguments directory:command.workingDirectoryPath environment:[command.environment mutableCopy]
                               completion:^(NSTask *t) {
+                                  [self.console log:@"BEFORE CODE SIGNING..."];
+                                  NSString *dyciFilePath = [[@"~/.dyci" stringByExpandingTildeInPath] stringByAppendingPathComponent:libraryName];
+                                  [self runCommand:[NSString stringWithFormat:@"/usr/bin/codesign -f -s \"iPhone Developer: iOS Developer\" %@", dyciFilePath]];
+                                  [self.console log:@"AFTER CODE SIGNING..."];
+                                  
                                   if (t.terminationStatus != 0) {
                                       [console error:[NSString stringWithFormat:@"Task failed %@ + %@", command.commandPath, command.arguments]];
                                       [console error:[NSString stringWithFormat:@"Task failed %i", t.terminationStatus]];
